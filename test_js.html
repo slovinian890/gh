@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Crypto Prices</title>
+    <style>
+        .posameznik {
+            box-shadow: 3px 2px;
+            border-radius: 10px;
+            width: 200px;
+            padding-left: 10px;
+        }
+        
+        .posameznik:hover {
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="zadnji">
+        nekej
+    </div>
+    <button class="dodaj_v_seznam">
+    gumb
+  </button>
+    <form class="forma" style="display: none;">
+        <input type="text" name="ime">
+        <input type="number" name="leta">
+        <input type="date" name="datum_rojstva">
+        <button class="konec"> konec</button>
+    </form>
+    <button class="vsipodatki">prikaz vseh podatkov</button>
+    <button class="brisanje">brisanje</button>
+    <button class="spreminjanje_datuma">spremeni datum</button>
+    <div class="izpisss">
+
+    </div>
+    <script>
+        count = 0;
+        var zadnji = document.querySelector(".zadnji");
+        var dodajanje = document.querySelector(".dodaj_v_seznam");
+        var form = document.querySelector(".forma");
+        dodajanje.addEventListener("click", function() {
+            if (form.style.display == "none") {
+                form.style.display = ""
+            } else {
+                form.style.display = "none"
+            }
+        });
+        let vsipodatki = [];
+        let konec = document.querySelector(".konec");
+        konec.addEventListener("click", function(e) {
+            e.preventDefault();
+            var ime = form.elements["ime"].value;
+            var leta = form.elements["leta"].value;
+            var datum = form.elements["datum_rojstva"].value;
+
+            if (!ime || !leta || !datum) {
+                alert("nisi vnesel vse");
+                form.elements["ime"].value = "";
+                form.elements["leta"].value = "";
+                form.elements["datum_rojstva"].value = "";
+                return;
+            }
+
+            let trenutni = [ime, leta, datum];
+            vsipodatki.push(trenutni);
+            console.log(vsipodatki);
+            form.elements["ime"].value = "";
+            form.elements["leta"].value = "";
+            form.elements["datum_rojstva"].value = "";
+            // Save updated array
+            localStorage.setItem("vsipodatki", JSON.stringify(vsipodatki));
+        });
+        var podatki = document.querySelector(".vsipodatki");
+        podatki.addEventListener("click", function() {
+            var h = document.querySelector(".izpisss");
+            vsipodatki.forEach(x => {
+                const p = document.createElement("p");
+                p.classList.add("posameznik");
+                p.textContent = x;
+
+                p.addEventListener("click", function() {
+                    if (p.style.backgroundColor != "red") {
+                        p.style.backgroundColor = "red";
+                    } else {
+                        p.style.backgroundColor = "white";
+                    }
+                });
+                const b = document.createElement("button");
+                b.innerHTML = "arial";
+                b.addEventListener("click", function() {
+                    if (p.style.fontFamily == "arial") {
+                        p.style.fontFamily = "";
+                    } else {
+                        p.style.fontFamily = "arial";
+
+                    }
+                });
+
+                h.appendChild(p);
+                h.appendChild(b);
+            });
+        });
+        var brisi = document.querySelector(".brisanje");
+        brisi.addEventListener("click", function() {
+            let x = vsipodatki.length - 1;
+            vsipodatki.splice(x, 1);
+            console.log(vsipodatki);
+        });
+        var d = document.querySelector(".spreminjanje_datuma");
+        d.addEventListener("click", function() {
+            let t = "2025-02-01";
+
+            let g = vsipodatki[0][2].value;
+            vsipodatki[0][2] = t;
+            console.log("spremenjen datum", g, "na t -->", t);
+        });
+
+        // Load existing data
+        let savedData = localStorage.getItem("vsipodatki");
+        if (savedData) {
+            vsipodatki = JSON.parse(savedData);
+        }
+    </script>
+
+</body>
+
+</html>
