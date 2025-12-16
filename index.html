@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <button class="pridobi">podatki</button>
+    <button class="sortiraj">sortiraj</button>
+    <button class="graf">graf</button>
+    <br>
+    <input class="isci">
+    <div class="izpis"></div>
+    <canvas id="graf" width="600" height="400"></canvas>
+
+    <script>
+        let dataa = [];
+        var pridobi = document.querySelector(".pridobi");
+
+        pridobi.addEventListener("click", function() {
+            fetch("data.json")
+                .then(response => response.json())
+                .then(data => {
+                    dataa = data;
+                    napisi(data);
+                })
+                .catch(error => console.log(error));
+        });
+
+        function napisi(data) {
+            var izpis = document.querySelector(".izpis");
+            izpis.innerHTML = ""; // clear output
+
+            data.forEach((x, index) => {
+                var f = document.createElement("div");
+                var editBtn = document.createElement("button"); // ✅ create edit button
+                var delBtn = document.createElement("button"); // delete button
+
+                f.innerHTML = `
+            <p><strong>Ime:</strong> ${x.name}</p>
+            <p><strong>Starost:</strong> ${x.age}</p>
+            <p><strong>Rojstni dan:</strong> ${x.birthday}</p>
+        `;
+
+                editBtn.textContent = "✏️ Edit";
+                delBtn.textContent = "❌";
+
+                // Edit functionality
+                editBtn.addEventListener("click", function() {
+                    f.innerHTML = "";
+
+                    const nameInput = document.createElement("input");
+                    nameInput.value = x.name;
+
+                    const ageInput = document.createElement("input");
+                    ageInput.type = "number";
+                    ageInput.value = x.age;
+
+                    const birthdayInput = document.createElement("input");
+                    birthdayInput.type = "date";
+                    birthdayInput.value = x.birthday;
+
+                    const saveBtn = document.createElement("button");
+                    saveBtn.textContent = "Save";
+
+                    f.appendChild(nameInput);
+                    f.appendChild(ageInput);
+                    f.appendChild(birthdayInput);
+                    f.appendChild(saveBtn);
+
+                    saveBtn.addEventListener("click", function() {
+                        dataa[index].name = nameInput.value;
+                        dataa[index].age = ageInput.value;
+                        dataa[index].birthday = birthdayInput.value;
+
+                        localStorage.setItem("myData", JSON.stringify(dataa));
+                        napisi(dataa);
+                    });
+                });
+
+                // Delete functionality
+                delBtn.addEventListener("click", function() {
+                    data.splice(index, 1);
+                    napisi(data);
+                });
+
+                f.appendChild(editBtn);
+                f.appendChild(delBtn);
+                f.appendChild(document.createElement("hr"));
+                izpis.appendChild(f);
+            });
+        }
+
+        var i = document.querySelector(".isci");
+        i.addEventListener("input", function() {
+            const searchTerm = i.value.toLowerCase();
+            const filtered = dataa.filter(x => x.name.toLowerCase().includes(searchTerm));
+            console.log(filtered);
+            napisi(filtered);
+        });
+
+        var t = document.querySelector(".sortiraj");
+        t.addEventListener("click", function() {
+            dataa.sort((a, b) => a.age - b.age);
+            napisi(dataa);
+
+        });
+
+        function narisi(data) {
+            const canvas = document.getElementById("graf");
+            const ctx = canvas.getContext("2d");
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 40;
+            const barWidth = 40;
+            const gap = 20;
+
+            const maxAge = Math.max(...data.map(p => p.age));
+            const scaleY = (canvas.height - padding * 2) / maxAge;
+
+            // Axes
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+
+            data.forEach((person, i) => {
+                const x = padding + i * (barWidth + gap) + gap;
+                const barHeight = person.age * scaleY;
+                const y = canvas.height - padding - barHeight;
+
+                // Bar
+                ctx.fillStyle = "steelblue";
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                // Age label
+                ctx.fillStyle = "black";
+                ctx.fillText(person.age, x + 10, y - 5);
+
+                // Name label
+                ctx.save();
+                ctx.translate(x + 10, canvas.height - padding + 15);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(person.name, 0, 0);
+                ctx.restore();
+            });
+        }
+
+        var g = document.querySelector(".graf");
+        g.addEventListener("click", function() {
+            narisi(dataa);
+        });
+    </script>
+</body>
+
+</html>
